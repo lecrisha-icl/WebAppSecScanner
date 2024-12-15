@@ -1,2 +1,3 @@
 # WebAppSecScanner
-Web App Security Scanner for testing security vulnerablilities
+
+Web App Security Scanner for testing security vulnerabilities
