@@ -23,20 +23,15 @@ class WebSecurityScanner:
         self.max_depth = max_depth
         self.visited_urls: Set[str] = set()
         self.vulnerabilities: List[Dict] = []
-        self.session = requests.Session
+        self.session = requests.Session()
 
         # Initialize colorama for cross-platform colored output
         colorama.init()
 
-
-    
     def normalize_url(self, url: str) -> str:
-        """
-        Normalize the URL to prevent duplicate checks.
-        """
+        """Normalize the URL to prevent duplicate checks"""
         parsed = urllib.parse.urlparse(url)
-        return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-    
+        return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"    
 
 
     # Implementing the Crawler
@@ -68,11 +63,9 @@ class WebSecurityScanner:
             print(f"Error crawling {url}: {str(e)}")
 
 
-
-
     # SQL Injection Detection Check
     def check_sql_injection(self, url: str) -> None:
-        """Test for potential SQL injection vulnerabilities."""
+        """Test for potential SQL injection vulnerabilities"""
         sql_payloads = ["'", "1' OR '1'='1", "' OR 1=1--", "' UNION SELECT NULL--"]
 
         for payload in sql_payloads:
@@ -82,13 +75,13 @@ class WebSecurityScanner:
                 params = urllib.parse.parse_qs(parsed.query)
 
                 for param in params:
-                    test_url = url.replace(f"{param}={params[param][0]}",
-                                               f"{param}={payload}")
+                    test_url = url.replace(f"{param}={params[param][0]}", 
+                                         f"{param}={payload}")
                     response = self.session.get(test_url)
 
                     # Look for SQL error messages
-                    if any(error in response.tex.lower() for error in
-                            ['sql', 'mysql', 'sqlite', 'postgresql', 'oracle']):
+                    if any(error in response.text.lower() for error in 
+                        ['sql', 'mysql', 'sqlite', 'postgresql', 'oracle']):
                         self.report_vulnerability({
                             'type': 'SQL Injection',
                             'url': url,
@@ -100,10 +93,9 @@ class WebSecurityScanner:
                 print(f"Error testing SQL injection on {url}: {str(e)}")
 
 
-
     # XSS (Cross-Site Scripting) Check
     def check_xss(self, url: str) -> None:
-        """Test for potential Cross-Site Scripting vulnerabilities."""
+        """Test for potential Cross-Site Scripting vulnerabilities"""
         xss_payloads = [
             "<script>alert('XSS')</script>",
             "<img src=x onerror=alert('XSS')>",
@@ -112,13 +104,13 @@ class WebSecurityScanner:
 
         for payload in xss_payloads:
             try:
-                # Test GET Parameters
+                # Test GET parameters
                 parsed = urllib.parse.urlparse(url)
                 params = urllib.parse.parse_qs(parsed.query)
 
                 for param in params:
-                    test_url = url.replace(f"{param}={params[param][0]}",
-                                            f"{param}={urllib.parse.quote(payload)}")
+                    test_url = url.replace(f"{param}={params[param][0]}", 
+                                         f"{param}={urllib.parse.quote(payload)}")
                     response = self.session.get(test_url)
 
                     if payload in response.text:
@@ -133,10 +125,9 @@ class WebSecurityScanner:
                 print(f"Error testing XSS on {url}: {str(e)}")
 
 
-
     # Sensitive Information Exposure Check
     def check_sensitive_info(self, url: str) -> None:
-        """Check for exposed sensitive information."""
+        """Check for exposed sensitive information"""
         sensitive_patterns = {
             'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
             'phone': r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
@@ -161,11 +152,10 @@ class WebSecurityScanner:
             print(f"Error checking sensitive information on {url}: {str(e)}")
 
 
-
     # Implementing Main Scanning Logic
     def scan(self) -> List[Dict]:
         """
-        Main scanning method that coordinates the security checks.
+        Main scanning method that coordinates the security checks
 
         Returns:
             List of discovered vulnerabilities
@@ -183,17 +173,15 @@ class WebSecurityScanner:
                 executor.submit(self.check_sensitive_info, url)
 
         return self.vulnerabilities
-    
 
     def report_vulnerability(self, vulnerability: Dict) -> None:
-        """
-        Record and display found vulnerabilities.
-        """
+        """Record and display found vulnerabilities"""
         self.vulnerabilities.append(vulnerability)
         print(f"{colorama.Fore.RED}[VULNERABILITY FOUND]{colorama.Style.RESET_ALL}")
         for key, value in vulnerability.items():
             print(f"{key}: {value}")
         print()
+
 
 
 if __name__ == "__main__":
@@ -205,7 +193,7 @@ if __name__ == "__main__":
     scanner = WebSecurityScanner(target_url)
     vulnerabilities = scanner.scan()
 
-    # Print Summary
+    # Print summary
     print(f"\n{colorama.Fore.GREEN}Scan Complete!{colorama.Style.RESET_ALL}")
     print(f"Total URLs scanned: {len(scanner.visited_urls)}")
     print(f"Vulnerabilities found: {len(vulnerabilities)}")
