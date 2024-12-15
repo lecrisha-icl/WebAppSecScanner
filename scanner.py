@@ -129,8 +129,8 @@ class WebSecurityScanner:
     def check_sensitive_info(self, url: str) -> None:
         """Check for exposed sensitive information"""
         sensitive_patterns = {
-            'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-            'phone': r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
+            # 'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
+            # 'phone': r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
             'ssn': r'\b\d{3}-\d{2}-\d{4}\b',
             'api_key': r'api[_-]?key[_-]?([\'"|`])([a-zA-Z0-9]{32,45})\1'
         }
